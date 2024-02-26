@@ -39,8 +39,8 @@ window.addEventListener("keypress", (e) => {
 
 // 防止FORM內部的BUTTON交出表單
 let allButtons = document.querySelectorAll("button");
-allButtons.forEach((buttons) => {
-  buttons.addEventListener("click", (e) => {
+allButtons.forEach((button) => {
+  button.addEventListener("click", (e) => {
     e.preventDefault();
   });
 });
@@ -127,11 +127,11 @@ function convertor(grade) {
 }
 
 function setGPA() {
-  let formLength = document.querySelectorAll(".form").length; // If you're not using formLength, you can remove this line.
+  let formLength = document.querySelectorAll("form").length;
   let credits = document.querySelectorAll(".class-credit");
-  let selects = document.querySelectorAll(".select");
-  let sum = 0; // GPA calculation numerator
-  let creditSum = 0; // GPA calculation denominator
+  let selects = document.querySelectorAll("select");
+  let sum = 0; // GPA計算用分子
+  let creditSum = 0; // GPA計算用分母
 
   for (let i = 0; i < credits.length; i++) {
     if (!isNaN(credits[i].valueAsNumber)) {
@@ -139,26 +139,21 @@ function setGPA() {
     }
   }
 
-  for (let i = 0; i < selects.length; i++) {
-    // Use selects.length to match the number of select elements
-    if (credits[i] && !isNaN(credits[i].valueAsNumber)) {
-      // Check if credits[i].valueAsNumber is not NaN
+  for (let i = 0; i < formLength; i++) {
+    if (!isNaN(credits[i].valueAsNumber)) {
       sum += credits[i].valueAsNumber * convertor(selects[i].value);
     }
   }
 
   let result;
-  if (creditSum === 0) {
-    // Check if creditSum is 0 to avoid division by zero
+  if (creditSum == 0) {
     result = (0.0).toFixed(2);
   } else {
     result = (sum / creditSum).toFixed(2);
   }
-
-  document.querySelector("#result-gpa").innerText = result;
+  document.getElementById("result-gpa").innerText = result;
 }
 
-// create new form
 let addButton = document.querySelector(".plus-btn");
 addButton.addEventListener("click", () => {
   let newForm = document.createElement("form");
@@ -169,21 +164,17 @@ addButton.addEventListener("click", () => {
   let newInput1 = document.createElement("input");
   newInput1.setAttribute("type", "text");
   newInput1.setAttribute("list", "opt");
-  newInput1.setAttribute("placeholder", "class category");
   newInput1.classList.add("class-type");
 
   let newInput2 = document.createElement("input");
   newInput2.setAttribute("type", "text");
   newInput2.classList.add("class-number");
-  newInput2.setAttribute("placeholder", "class number");
 
   let newInput3 = document.createElement("input");
   newInput3.setAttribute("type", "number");
   newInput3.setAttribute("min", "0");
   newInput3.setAttribute("max", "6");
-  newInput3.setAttribute("placeholder", "credits");
   newInput3.classList.add("class-credit");
-
   newInput3.addEventListener("change", () => {
     setGPA();
   });
@@ -262,7 +253,7 @@ addButton.addEventListener("click", () => {
     setGPA();
     changeColor(e.target);
   });
-  // add trash Btn
+
   let newButton = document.createElement("button");
   newButton.classList.add("trash-button");
   let newItag = document.createElement("i");
@@ -270,9 +261,17 @@ addButton.addEventListener("click", () => {
   newItag.classList.add("fa-trash");
   newButton.appendChild(newItag);
 
-  // 監聽 click 事件
   newButton.addEventListener("click", (e) => {
     e.preventDefault();
+    e.target.parentElement.parentElement.style.animation =
+      "scaleDown 0.5s ease forwards";
+    e.target.parentElement.parentElement.addEventListener(
+      "animationend",
+      (e) => {
+        e.target.remove();
+        setGPA();
+      }
+    );
   });
 
   newDiv.appendChild(newInput1);
@@ -286,79 +285,73 @@ addButton.addEventListener("click", () => {
   newForm.style.animation = "scaleUp 0.5s ease forwards";
 });
 
-//find trash BTN
-let trashButton = document.querySelectorAll(".trash-button");
-trashButton.forEach((trash) => {
+let allTrash = document.querySelectorAll(".trash-button");
+allTrash.forEach((trash) => {
   trash.addEventListener("click", (e) => {
     e.target.parentElement.parentElement.classList.add("remove");
   });
-  trashButton.forEach((trash) => {
-    trash.addEventListener("click", (e) => {
-      let form = e.target.parentElement.parentElement;
-      form.addEventListener("transitionend", (e) => {
-        e.target.remove();
-        setGPA();
-      });
-    });
+});
+allTrash.forEach((trash) => {
+  let form = trash.parentElement.parentElement;
+  form.addEventListener("transitionend", (e) => {
+    e.target.remove();
+    setGPA();
   });
 });
 
 // 排序演算法
 let btn1 = document.querySelector(".sort-descending");
 let btn2 = document.querySelector(".sort-ascending");
-
 btn1.addEventListener("click", () => {
-  handleSorting("descending");
+  handleSorting("descending"); // 大到小
 });
-
 btn2.addEventListener("click", () => {
-  handleSorting("ascending");
+  handleSorting("ascending"); // 小到大
 });
 
 function handleSorting(direction) {
-  let graders = document.querySelectorAll("div .grader");
-  let object_array = [];
+  let graders = document.querySelectorAll("div.grader");
+  let objectArray = [];
+
   for (let i = 0; i < graders.length; i++) {
-    let class_name = graders[i].children[0].value;
-    let class_number = graders[i].children[1].value;
+    let class_name = graders[i].children[0].value; // class category
+    let class_number = graders[i].children[1].value; // class number
     let class_credit = graders[i].children[2].value;
     let class_grade = graders[i].children[3].value;
-    console.log(class_name, class_number, class_credit, class_grade);
+
+    if (
+      !(
+        class_name == "" &&
+        class_number == "" &&
+        class_credit == "" &&
+        class_grade == ""
+      )
+    ) {
+      let class_object = {
+        class_name,
+        class_number,
+        class_credit,
+        class_grade,
+      };
+      objectArray.push(class_object);
+    }
   }
 
-  if (
-    !(
-      class_name === "" &&
-      class_number === "" &&
-      class_credit === "" &&
-      class_grade === ""
-    )
-  ) {
-    let class_object = {
-      class_name,
-      class_number,
-      class_credit,
-      class_grade,
-    };
-    object_array.push(class_object);
-  }
-  //將成績從英文轉換成數字
-  for (let i = 0; i < object_array.length; i++) {
-    object_array[i].class_grade_number = convertor(object_array[i].class_grade);
+  // 取得object array後，我們可以把成績String換成數字
+  for (let i = 0; i < objectArray.length; i++) {
+    objectArray[i].class_grade_number = convertor(objectArray[i].class_grade);
   }
 
-  object_array = mergeSort(object_array);
-  if ((direction = "descending")) {
-    object_array = object_array.reverse();
+  objectArray = mergeSort(objectArray);
+  if (direction == "descending") {
+    objectArray = objectArray.reverse();
   }
-  console.log(object_array);
-}
-// 根據 object array 的內容更新網站
-let allInputs = document.querySelector(".all-inputs");
-allInputs.innerHTML = "";
+  // 根據object array的內容，來更新網頁
+  let allInputs = document.querySelector(".all-inputs");
+  allInputs.innerHTML = "";
 
-for (let i = 0; i < objectArray.length; i++) {
-  allInputs.innerHTML += `<form>
+  for (let i = 0; i < objectArray.length; i++) {
+    allInputs.innerHTML += `<form>
     <div class="grader">
         <input
         type="text"
@@ -401,31 +394,55 @@ for (let i = 0; i < objectArray.length; i++) {
         </button>
     </div>
     </form>`;
-}
+  }
 
-// Select 直接用 JS 更改
-graders = document.querySelectorAll("div .grader");
-for (let i = 0; i < graders.length; i++) {
-  graders[i].children[3].value = object_array[i].class_grade;
-}
+  // SELECT可直接用JS更改
+  graders = document.querySelectorAll("div.grader");
+  for (let i = 0; i < graders.length; i++) {
+    graders[i].children[3].value = objectArray[i].class_grade;
+  }
 
-//select 顏色轉換
-allSelect = document.querySelectorAll("select");
-allSelect.forEach((select) => {});
-
-//select 監聽事件
-let allSelect = document.querySelectorAll("select");
-allSelect.foreach((select) => {
-  select.addEventListener("change", (e) => {
-    setGPA();
-    changeColor(e.target);
+  // select事件監聽
+  allSelects = document.querySelectorAll("select");
+  allSelects.forEach((select) => {
+    changeColor(select);
+    select.addEventListener("change", (e) => {
+      setGPA();
+      changeColor(e.target);
+    });
   });
-});
+
+  // credit事件監聽
+  let allCredits = document.querySelectorAll(".class-credit");
+  allCredits.forEach((credit) => {
+    credit.addEventListener("change", () => {
+      setGPA();
+    });
+  });
+
+  // 垃圾桶
+  let allTrash = document.querySelectorAll(".trash-button");
+  allTrash.forEach((trash) => {
+    trash.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.target.parentElement.parentElement.style.animation =
+        "scaleDown 0.5s ease forwards";
+      e.target.parentElement.parentElement.addEventListener(
+        "animationend",
+        (e) => {
+          e.target.remove();
+          setGPA();
+        }
+      );
+    });
+  });
+}
 
 function merge(a1, a2) {
   let result = [];
   let i = 0;
   let j = 0;
+
   while (i < a1.length && j < a2.length) {
     if (a1[i].class_grade_number > a2[j].class_grade_number) {
       result.push(a2[j]);
@@ -435,6 +452,7 @@ function merge(a1, a2) {
       i++;
     }
   }
+
   while (i < a1.length) {
     result.push(a1[i]);
     i++;
@@ -443,16 +461,21 @@ function merge(a1, a2) {
     result.push(a2[j]);
     j++;
   }
+
   return result;
 }
 
 function mergeSort(arr) {
-  if (arr.length === 0) {
+  if (arr.length == 0) {
+    return;
+  }
+
+  if (arr.length == 1) {
     return arr;
   } else {
     let middle = Math.floor(arr.length / 2);
     let left = arr.slice(0, middle);
-    let right = arr.slice(middel, arr.length);
+    let right = arr.slice(middle, arr.length);
     return merge(mergeSort(left), mergeSort(right));
   }
 }
